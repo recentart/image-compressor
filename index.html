@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Free Image Compressor – Compress JPG, PNG &amp; WebP to a Target Size</title>
+  <meta name="description" content="Free image compressor that runs in your browser. Compress JPG, PNG and WebP images to a target file size such as 100 KB, 200 KB, 500 KB or 1 MB. No sign-up and no uploads.">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Free Image Compressor – Compress JPG, PNG &amp; WebP to a Target Size">
+  <meta property="og:description" content="Compress images to a target file size right in your browser. Your images are never uploaded.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="wrap header">
+    <h1>Free Image Compressor</h1>
+    <p class="lead">Compress JPG, PNG and WebP images to a target file size.</p>
+    <p class="privacy-note">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z"/></svg>
+      Your images are processed locally in your browser and are never uploaded to our server.
+    </p>
+  </header>
+
+  <main class="wrap">
+    <section id="drop" class="drop" aria-label="Choose an image">
+      <svg class="drop-icon" viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H5V5h14v14Zm-5.1-6.6-2.8 3.6-2-2.4L6 17h12l-4.1-4.6ZM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg>
+      <p class="drop-title" id="drop-title">Drag and drop an image here</p>
+      <p class="drop-or">or</p>
+      <button type="button" class="btn primary" id="choose">Choose Image</button>
+      <p class="hint">JPG, PNG or WebP</p>
+      <input type="file" id="file" class="visually-hidden" tabindex="-1" aria-hidden="true"
+             accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
+    </section>
+    <p id="file-message" class="message" role="alert"></p>
+
+    <section id="editor" class="card" aria-labelledby="image-heading" hidden>
+      <h2 id="image-heading">Your image</h2>
+      <dl id="info" class="facts"></dl>
+
+      <form id="settings" novalidate>
+        <fieldset class="field">
+          <legend>Target maximum file size</legend>
+          <div class="chips">
+            <input type="radio" name="target" id="t100" value="100000"><label for="t100">100 KB</label>
+            <input type="radio" name="target" id="t200" value="200000" checked><label for="t200">200 KB</label>
+            <input type="radio" name="target" id="t500" value="500000"><label for="t500">500 KB</label>
+            <input type="radio" name="target" id="t1m" value="1000000"><label for="t1m">1 MB</label>
+            <input type="radio" name="target" id="tcustom" value="custom"><label for="tcustom">Custom</label>
+          </div>
+          <div id="custom" class="custom" hidden>
+            <label for="custom-value">Custom target size</label>
+            <div class="custom-row">
+              <input type="number" id="custom-value" inputmode="decimal" min="1" step="any" value="300" aria-describedby="custom-error">
+              <select id="custom-unit" aria-label="Unit">
+                <option value="KB">KB</option>
+                <option value="MB">MB</option>
+              </select>
+            </div>
+            <p id="custom-error" class="field-error"></p>
+          </div>
+          <p class="hint">1 KB = 1,000 bytes.</p>
+        </fieldset>
+
+        <fieldset class="field" id="png-options" hidden>
+          <legend>PNG method</legend>
+          <label class="option">
+            <input type="radio" name="png" value="png" checked>
+            <span><strong>Lossless optimization</strong>
+              <span class="hint">Keeps the image identical. Makes it smaller in width and height only if that is the only way to reach the target.</span></span>
+          </label>
+          <label class="option">
+            <input type="radio" name="png" value="palette">
+            <span><strong>Reduce colors</strong>
+              <span class="hint">Smaller PNG with up to 256 colors. Good for logos, screenshots and graphics. Photos may show banding.</span></span>
+          </label>
+          <label class="option">
+            <input type="radio" name="png" value="webp" id="png-webp">
+            <span><strong>Convert to WebP</strong>
+              <span class="hint" id="png-webp-hint">Usually much smaller, especially for photos. The file becomes a .webp image.</span></span>
+          </label>
+        </fieldset>
+
+        <button type="submit" class="btn primary" id="compress">Compress image</button>
+      </form>
+
+      <div id="status" class="status" hidden>
+        <p id="status-text"></p>
+        <progress id="progress" max="1" aria-labelledby="status-text"></progress>
+        <p id="status-detail" class="hint"></p>
+      </div>
+      <p id="outcome" class="message" role="alert"></p>
+    </section>
+
+    <section id="result" class="card" aria-labelledby="result-heading" hidden>
+      <h2 id="result-heading"></h2>
+      <ul id="result-notes" class="notes"></ul>
+      <dl id="result-facts" class="facts"></dl>
+      <div class="actions">
+        <a id="download" class="btn primary large" download>Download</a>
+        <button type="button" class="btn" id="another">Compress another image</button>
+      </div>
+    </section>
+
+    <section class="card privacy" aria-labelledby="privacy-heading">
+      <h2 id="privacy-heading">Privacy</h2>
+      <p>Your images are processed locally in your browser and are never uploaded to our server.</p>
+      <ul>
+        <li>Compression runs on your device using your browser's built-in image tools. This site has no upload feature and no server-side code.</li>
+        <li>No accounts, analytics or ads.</li>
+        <li>Compressed images don't keep the original's metadata, such as camera details or GPS location. Images that already meet your target are given back unchanged.</li>
+        <li>Like any website, the hosting provider may log basic connection details, such as your IP address, when this page loads.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <p>Free Image Compressor · No sign-up · Nothing leaves your device</p>
+  </footer>
+
+  <p id="live" class="visually-hidden" role="status"></p>
+</body>
+</html>
